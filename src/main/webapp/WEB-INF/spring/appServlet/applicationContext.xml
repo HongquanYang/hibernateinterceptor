@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd">
+
+	<context:component-scan base-package="com.webapp" />
+	<context:annotation-config />
+
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	<!-- sessionFactory -->
+
+
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="com.mysql.jdbc.Driver" />
+		<property name="jdbcUrl"
+			value="jdbc:mysql://192.168.0.147:3306/meituanhr2?characterEncoding=UTF-8" />
+		<property name="user" value="q3boy" />
+		<property name="password" value="123" />
+	</bean>
+
+   <bean id="dbinterceptor" class="com.webapp.interceptor.MyInterceptor">
+   </bean>
+   
+	<!-- sessionFactory -->
+	<bean id="sessionFactory"
+		class="com.webapp.interceptor.MtSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="defaultInterceptor" ref="dbinterceptor" />
+		 
+		
+		<property name="packagesToScan">
+			<list>
+				<value>com.webapp.domain</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<value>
+				hibernate.dialect=org.hibernate.dialect.SQLServerDialect
+				hibernate.show_sql=true
+				hibernate.hbm2ddl.auto=update
+			</value>
+		</property>
+	</bean>
+	
+	<!-- TransactionManager -->
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+
+
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+	<bean
+		class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="save*" propagation="REQUIRED" />
+			<tx:method name="insert*" propagation="REQUIRED" />
+			<tx:method name="add*" propagation="REQUIRED" />
+			<tx:method name="update*" propagation="REQUIRED" />
+			<tx:method name="delete*" propagation="REQUIRED" />
+			<tx:method name="remove*" propagation="REQUIRED" />
+			<tx:method name="execute*" propagation="REQUIRED" />
+			<tx:method name="del*" propagation="REQUIRED" />
+			<tx:method name="recover*" propagation="REQUIRED" />
+			<tx:method name="sync*" propagation="REQUIRED" />
+			<tx:method name="*" read-only="true" />
+		</tx:attributes>
+	</tx:advice>
+
+	<aop:config>
+		<aop:pointcut id="txPointcut"
+			expression="execution(* com.webapp.service.impl.*.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut" />
+	</aop:config>
+
+	<aop:aspectj-autoproxy />
+	<!-- validator -->
+	<bean id="validator"
+		class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" />
+</beans>
