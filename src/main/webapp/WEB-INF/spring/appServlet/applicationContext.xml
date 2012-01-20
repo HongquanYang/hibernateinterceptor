@@ -31,8 +31,6 @@
 		class="com.webapp.interceptor.MtSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
 		<property name="defaultInterceptor" ref="dbinterceptor" />
-		 
-		
 		<property name="packagesToScan">
 			<list>
 				<value>com.webapp.domain</value>

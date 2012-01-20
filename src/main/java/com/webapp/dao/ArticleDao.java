@@ -4,7 +4,6 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -12,7 +11,6 @@ import org.hibernate.Transaction;
 import org.springframework.stereotype.Repository;
 import com.webapp.core.Choice;
 import com.webapp.domain.Article;
-import com.webapp.interceptor.MyInterceptor;
 
 /*****
  * 
@@ -24,21 +22,23 @@ import com.webapp.interceptor.MyInterceptor;
 public class ArticleDao {
 	@Resource
 	SessionFactory sessionFactory;
-	private final ThreadLocal<Session> threadLocal = new ThreadLocal<Session>();
 
-	// 获取session
-	public Session getSession() throws HibernateException {
-		Session session = (Session) threadLocal.get();
-		if (null == session) {
-			session = sessionFactory.openSession(new  MyInterceptor());
-			threadLocal.set(session);
-		}
-		return session;
-	}
+	// private final ThreadLocal<Session> threadLocal = new
+	// ThreadLocal<Session>();
+
+//	// 获取session
+//	public Session getSession() throws HibernateException {
+//		Session session = (Session) threadLocal.get();
+//		if (null == session) {
+//			session = sessionFactory.openSession();
+//			threadLocal.set(session);
+//		}
+//		return session;
+//	}
 
 	public Article chooseAction(String choice, Integer articleId,
 			Article article) {
-		Session session = getSession();
+		Session session = sessionFactory.openSession();
 		Transaction tx = session.beginTransaction();
 		switch (Choice.getChoice(choice)) {
 		case get:
